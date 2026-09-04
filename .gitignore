@@ -1,0 +1,16 @@
+/target
+
+# Loop containers carry document text plus author names, email addresses and
+# directory object IDs, so test documents are never committed. Point the
+# regression tests at a local directory instead:
+#   LOOP_EXTRACT_TEST_CORPUS=./sample-documents cargo test
+/sample-documents/
+
+# Payload dumps from `inspect --dump-payloads` contain the same content.
+/debug/
+.DS_Store
+
+# Expectation files naming or quoting real documents. The schema and a synthetic
+# example are committed; the real ones stay local, next to the corpus they
+# describe. The corpus tests read this directory first.
+/tests/expectations/private/
