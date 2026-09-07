@@ -1,0 +1,109 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # Opens and maintains a release pull request. Merging it tags the release and
+  # publishes a GitHub Release; the jobs below then attach the binaries.
+  release-please:
+    name: Prepare release
+    runs-on: ubuntu-latest
+    outputs:
+      released: ${{ steps.release.outputs.release_created }}
+      tag: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  # One archive per target, with a SHA-256 checksum beside it.
+  binaries:
+    name: ${{ matrix.target }}
+    needs: release-please
+    if: needs.release-please.outputs.released == 'true'
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { target: x86_64-unknown-linux-gnu, os: ubuntu-latest }
+          - { target: aarch64-apple-darwin, os: macos-latest }
+          - { target: x86_64-pc-windows-msvc, os: windows-latest }
+          - { target: aarch64-pc-windows-msvc, os: windows-latest }
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release-please.outputs.tag }}
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      # Builds, archives (.tar.gz on Unix, .zip on Windows), checksums and
+      # uploads to the release in one step.
+      - uses: taiki-e/upload-rust-binary-action@v1
+        with:
+          bin: loop-extract
+          target: ${{ matrix.target }}
+          archive: $bin-$tag-$target
+          include: LICENSE,README.md,FORMAT-NOTES.md,CHANGELOG.md
+          checksum: sha256
+          ref: refs/tags/${{ needs.release-please.outputs.tag }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  # Debian and RPM packages, for the distributions that want one.
+  linux-packages:
+    name: Linux packages
+    needs: release-please
+    if: needs.release-please.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release-please.outputs.tag }}
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install packaging tools
+        run: cargo install --locked cargo-deb cargo-generate-rpm
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Build .deb and .rpm
+        run: |
+          cargo deb --no-build --output dist/
+          cargo generate-rpm --output dist/
+
+      - name: Checksums
+        working-directory: dist
+        run: |
+          for f in *; do sha256sum "$f" > "$f.sha256"; done
+          ls -la
+
+      - name: Attach to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ needs.release-please.outputs.tag }}" dist/* --clobber

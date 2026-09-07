@@ -11,6 +11,36 @@ readme = "README.md"
 keywords = ["microsoft-loop", "fluid-framework", "markdown", "extraction", "cli"]
 categories = ["command-line-utilities", "text-processing", "parser-implementations"]
 
+# Debian packaging: `cargo deb`
+[package.metadata.deb]
+maintainer = "Jolyon Suthers <201621+fenrick@users.noreply.github.com>"
+copyright = "2026 Jolyon Suthers"
+license-file = ["LICENSE", "0"]
+section = "utils"
+priority = "optional"
+depends = "$auto"
+extended-description = """
+Reads Microsoft Loop (.loop) and Fluid (.fluid) containers and reconstructs the \
+document inside them as Markdown, plain text or JSON. Runs entirely locally: it \
+needs no Microsoft 365, OneDrive, SharePoint or Microsoft Graph access, and \
+makes no network calls."""
+assets = [
+    ["target/release/loop-extract", "usr/bin/", "755"],
+    ["README.md", "usr/share/doc/loop-extract/README.md", "644"],
+    ["FORMAT-NOTES.md", "usr/share/doc/loop-extract/FORMAT-NOTES.md", "644"],
+    ["CHANGELOG.md", "usr/share/doc/loop-extract/CHANGELOG.md", "644"],
+]
+
+# RPM packaging: `cargo generate-rpm`
+[package.metadata.generate-rpm]
+license = "MIT"
+assets = [
+    { source = "target/release/loop-extract", dest = "/usr/bin/loop-extract", mode = "755" },
+    { source = "LICENSE", dest = "/usr/share/licenses/loop-extract/LICENSE", mode = "644", doc = true },
+    { source = "README.md", dest = "/usr/share/doc/loop-extract/README.md", mode = "644", doc = true },
+    { source = "FORMAT-NOTES.md", dest = "/usr/share/doc/loop-extract/FORMAT-NOTES.md", mode = "644", doc = true },
+]
+
 [dependencies]
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }

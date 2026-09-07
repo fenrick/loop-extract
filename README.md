@@ -1,5 +1,9 @@
 # loop-extract
 
+[![CI](https://github.com/fenrick/loop-extract/actions/workflows/ci.yml/badge.svg)](https://github.com/fenrick/loop-extract/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/fenrick/loop-extract?sort=semver)](https://github.com/fenrick/loop-extract/releases/latest)
+[![License: MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
+
 Reads Microsoft Loop `.loop` and Fluid `.fluid` files and reconstructs the
 document inside them as Markdown, plain text or JSON.
 
@@ -19,14 +23,65 @@ as either an observation or an assumption, and the `inspect` command exists so
 that a future format change shows up as a diagnostic rather than as quietly
 missing text.
 
-## Build
+## Install
+
+Every release publishes a signed-checksum archive for each supported platform,
+plus Debian and RPM packages. See
+[the latest release](https://github.com/fenrick/loop-extract/releases/latest).
+
+| Platform | Asset |
+| --- | --- |
+| Linux x86-64 | `loop-extract-vX.Y.Z-x86_64-unknown-linux-gnu.tar.gz`, `.deb`, `.rpm` |
+| macOS Apple Silicon | `loop-extract-vX.Y.Z-aarch64-apple-darwin.tar.gz` |
+| Windows x86-64 | `loop-extract-vX.Y.Z-x86_64-pc-windows-msvc.zip` |
+| Windows ARM64 | `loop-extract-vX.Y.Z-aarch64-pc-windows-msvc.zip` |
+
+Each asset has a `.sha256` file beside it. Verify before use:
 
 ```bash
+sha256sum -c loop-extract-vX.Y.Z-x86_64-unknown-linux-gnu.tar.gz.sha256
+```
+
+### Linux
+
+```bash
+sudo dpkg -i loop-extract_X.Y.Z-1_amd64.deb      # Debian, Ubuntu
+sudo rpm -i loop-extract-X.Y.Z-1.x86_64.rpm      # Fedora, RHEL, openSUSE
+```
+
+Or extract the tarball and put the binary on your `PATH`.
+
+### macOS
+
+```bash
+tar xzf loop-extract-vX.Y.Z-aarch64-apple-darwin.tar.gz
+xattr -d com.apple.quarantine loop-extract    # downloaded binaries are quarantined
+sudo mv loop-extract /usr/local/bin/
+```
+
+The binary is not code-signed or notarised, so macOS blocks it on first run until
+the quarantine attribute is cleared. Building from source avoids this.
+
+### Windows
+
+Extract the `.zip` and put `loop-extract.exe` somewhere on your `PATH`.
+
+### From source
+
+```bash
+cargo install --git https://github.com/fenrick/loop-extract
+```
+
+or
+
+```bash
+git clone https://github.com/fenrick/loop-extract
+cd loop-extract
 cargo build --release
 # binary at ./target/release/loop-extract
 ```
 
-Rust 1.98 or later. No system dependencies.
+Rust 1.85 or later. No system dependencies, no C toolchain, no build scripts.
 
 ## Use
 
@@ -128,10 +183,16 @@ Corpus tests report that they were skipped when the variable is absent, so the
 suite passes without it. See `tests/expectations/README.md` for how per-file
 expectations work.
 
-## How the format was worked out
+## How the format works
 
-The format is undocumented, so the knowledge lives in the module documentation,
-next to the code that depends on it:
+[`FORMAT-NOTES.md`](FORMAT-NOTES.md) documents the container: the four layers,
+the framing tag table, how tree roles are decided, the property vocabulary, the
+operation log and its sequencing — and, explicitly, what is still unknown. Each
+claim is marked **observed** or **assumed**, because a parser that forgets which
+of its beliefs were guesses becomes quietly wrong two format versions later.
+
+The same knowledge also sits in the module documentation, next to the code that
+depends on it:
 
 | Module | Covers |
 | --- | --- |
@@ -143,7 +204,6 @@ next to the code that depends on it:
 | `src/document/reconstruct.rs` | how segments become blocks |
 | `src/operations/log.rs` | the operation log and how it is addressed |
 
-Each claim is marked as either an observation ("Observed in test fixtures") or an
-assumption ("ASSUMPTION, not confirmed"). Read the relevant module before
-changing how something is parsed, and see `CONTRIBUTING.md` for why that
-distinction is enforced.
+Read the relevant module before changing how something is parsed, and see
+[`CONTRIBUTING.md`](CONTRIBUTING.md) for why the observed/assumed distinction is
+enforced.

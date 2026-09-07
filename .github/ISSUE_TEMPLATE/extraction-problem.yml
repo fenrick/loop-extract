@@ -1,0 +1,57 @@
+name: Extraction problem
+description: A file does not extract, or the output is wrong
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Do not attach the file.** A `.loop` container carries its authors'
+        names, email addresses and directory object ids on nearly every
+        paragraph. Describe its shape instead, and paste the `inspect` report,
+        which contains no document text.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you ran, what you expected, and what you got.
+      placeholder: |
+        $ loop-extract extract page.loop
+        …
+    validations:
+      required: true
+
+  - type: textarea
+    id: inspect
+    attributes:
+      label: Inspect report
+      description: |
+        Output of `loop-extract inspect FILE`. This reports structure, counts and
+        property names only — no document text.
+      render: text
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `loop-extract --version`.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Platform
+      options: [macOS, Linux, Windows, other]
+    validations:
+      required: true
+
+  - type: input
+    id: origin
+    attributes:
+      label: Where the file came from
+      description: |
+        For example: saved from Loop on the web, downloaded from SharePoint, an
+        older `.fluid` document. Format changes usually track the source.

@@ -1,0 +1,38 @@
+name: Format finding
+description: Something about the container format that these notes get wrong or omit
+labels: [format]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        `FORMAT-NOTES.md` marks each claim as **observed** or **assumed**. If you
+        have evidence that promotes an assumption to an observation, or refutes
+        one, that is the most valuable kind of report this project can get.
+
+  - type: textarea
+    id: claim
+    attributes:
+      label: The claim in question
+      description: Quote the line from FORMAT-NOTES.md, or say what is missing.
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: |
+        What you saw, and how you saw it. Structure, offsets, tag bytes and
+        property names are all fine to paste. Document text is not needed.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: confidence
+    attributes:
+      label: How certain is this
+      options:
+        - Observed — I can reproduce it
+        - Assumed — it fits, but I have not proved it
+    validations:
+      required: true

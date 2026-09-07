@@ -1,0 +1,25 @@
+name: Feature request
+description: Suggest a capability
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What you are trying to do
+      description: The task, not the implementation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        Known gaps are listed under *What it does not do yet* in the README and
+        *What is still unknown* in `FORMAT-NOTES.md`. If your request is one of
+        those, say so — it tells us what to prioritise.

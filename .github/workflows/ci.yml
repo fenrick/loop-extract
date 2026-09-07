@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    name: Format, lint and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Formatting
+        run: cargo fmt --check
+
+      - name: Lints
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      # No test documents are committed, so corpus tests skip themselves and
+      # the suite must still pass.
+      - name: Tests
+        run: cargo test --all-features
+
+  # The release workflow cross-compiles four targets. Proving they still
+  # compile here means a release never fails on a platform nobody built.
+  targets:
+    name: Compiles for ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { target: x86_64-unknown-linux-gnu, os: ubuntu-latest }
+          - { target: aarch64-apple-darwin, os: macos-latest }
+          - { target: x86_64-pc-windows-msvc, os: windows-latest }
+          - { target: aarch64-pc-windows-msvc, os: windows-latest }
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      - run: cargo check --all-targets --target ${{ matrix.target }}
+
+  # Guard the promise the README makes: an ordinary export carries no personal
+  # data, and no real document is ever committed.
+  hygiene:
+    name: Repository hygiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: No document fixtures committed
+        run: |
+          if git ls-files | grep -iE '\.(loop|fluid)$'; then
+            echo "::error::A Loop or Fluid document is committed. These contain document text and personal data."
+            exit 1
+          fi
+          echo "no document fixtures in the index"
+
+      - name: No email addresses in tracked files
+        run: |
+          if git grep -nE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' \
+             -- . ':!Cargo.lock' \
+             | grep -vE '@ms/|@fluidx/|@hyperlink|users\.noreply\.github\.com'; then
+            echo "::error::An email address appears in a tracked file."
+            exit 1
+          fi
+          echo "no email addresses in tracked files"
