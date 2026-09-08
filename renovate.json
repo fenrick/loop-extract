@@ -1,6 +1,31 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
-  ]
+  "extends": ["config:recommended", ":semanticCommits"],
+  "schedule": ["before 6am on monday"],
+  "dependencyDashboard": true,
+  "packageRules": [
+    {
+      "description": "One pull request for every GitHub Actions update.",
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions",
+      "semanticCommitType": "ci"
+    },
+    {
+      "description": "One pull request for all non-breaking Rust dependency updates.",
+      "matchManagers": ["cargo"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "rust dependencies",
+      "semanticCommitType": "fix"
+    },
+    {
+      "description": "A breaking Rust update stays on its own, so it is reviewed on its own.",
+      "matchManagers": ["cargo"],
+      "matchUpdateTypes": ["major"],
+      "semanticCommitType": "fix"
+    }
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on the first day of the month"]
+  }
 }
