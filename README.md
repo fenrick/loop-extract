@@ -32,6 +32,7 @@ plus Debian and RPM packages. See
 | Platform | Asset |
 | --- | --- |
 | Linux x86-64 | `loop-extract-vX.Y.Z-x86_64-unknown-linux-gnu.tar.gz`, `.deb`, `.rpm` |
+| Linux ARM64 | `loop-extract-vX.Y.Z-aarch64-unknown-linux-gnu.tar.gz`, `.deb`, `.rpm` |
 | macOS Apple Silicon | `loop-extract-vX.Y.Z-aarch64-apple-darwin.tar.gz` |
 | Windows x86-64 | `loop-extract-vX.Y.Z-x86_64-pc-windows-msvc.zip` |
 | Windows ARM64 | `loop-extract-vX.Y.Z-aarch64-pc-windows-msvc.zip` |
@@ -45,9 +46,11 @@ sha256sum -c loop-extract-vX.Y.Z-x86_64-unknown-linux-gnu.tar.gz.sha256
 ### Linux
 
 ```bash
-sudo dpkg -i loop-extract_X.Y.Z-1_amd64.deb      # Debian, Ubuntu
-sudo rpm -i loop-extract-X.Y.Z-1.x86_64.rpm      # Fedora, RHEL, openSUSE
+sudo dpkg -i loop-extract_X.Y.Z-1_amd64.deb       # Debian, Ubuntu
+sudo rpm -i loop-extract-X.Y.Z-1.x86_64.rpm       # Fedora, RHEL, openSUSE
 ```
+
+Replace `amd64` with `arm64`, or `x86_64` with `aarch64`, on ARM hardware.
 
 Or extract the tarball and put the binary on your `PATH`.
 
