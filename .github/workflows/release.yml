@@ -70,6 +70,20 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends ${{ matrix.apt }}
 
+      - name: Keep runner paths out of the binary
+        shell: bash
+        run: |
+          # Panic messages otherwise embed the runner's home directory, which
+          # reaches every published binary via the toolchain and registry paths
+          # baked in by file!(). CONTRIBUTING.md documents the same step for
+          # local release builds.
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            home=$(cygpath -w "$HOME")
+          else
+            home="$HOME"
+          fi
+          echo "RUSTFLAGS=--remap-path-prefix=$home=." >> "$GITHUB_ENV"
+
 
       # Builds, archives (.tar.gz on Unix, .zip on Windows), checksums and
       # uploads to the release in one step.
@@ -114,6 +128,20 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends ${{ matrix.apt }}
+
+      - name: Keep runner paths out of the binary
+        shell: bash
+        run: |
+          # Panic messages otherwise embed the runner's home directory, which
+          # reaches every published binary via the toolchain and registry paths
+          # baked in by file!(). CONTRIBUTING.md documents the same step for
+          # local release builds.
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            home=$(cygpath -w "$HOME")
+          else
+            home="$HOME"
+          fi
+          echo "RUSTFLAGS=--remap-path-prefix=$home=." >> "$GITHUB_ENV"
 
       - name: Install packaging tools
         run: cargo install --locked cargo-deb cargo-generate-rpm
