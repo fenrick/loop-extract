@@ -4,6 +4,19 @@ All notable changes to this project are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses
 [semantic versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0](https://github.com/fenrick/loop-extract/compare/v1.0.0...v1.1.0) (2026-09-09)
+
+
+### Added
+
+* publish Linux ARM64 builds and keep runner paths out of binaries ([c54612a](https://github.com/fenrick/loop-extract/commit/c54612a6b6cbe9af946ffc68b05f7c2832903c98))
+* publish Linux ARM64 builds and packages ([a354498](https://github.com/fenrick/loop-extract/commit/a354498dbf2916ff48de51f2959e882aa8b6ab6d))
+
+
+### Fixed
+
+* keep runner paths out of published binaries ([d3ba73b](https://github.com/fenrick/loop-extract/commit/d3ba73bf357b75bac95ce45151015709a9040f89))
+
 ## [1.0.0](https://github.com/fenrick/loop-extract/compare/v0.1.0...v1.0.0) (2026-09-08)
 
 
