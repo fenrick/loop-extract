@@ -42,16 +42,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
-    # Only consulted when building the matching target, so it is harmless on
-    # the other legs.
-    env:
-      CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
     strategy:
       fail-fast: false
       matrix:
         include:
           - { target: x86_64-unknown-linux-gnu, os: ubuntu-latest }
-          - { target: aarch64-unknown-linux-gnu, os: ubuntu-latest, apt: gcc-aarch64-linux-gnu }
           - { target: aarch64-apple-darwin, os: macos-latest }
           - { target: x86_64-pc-windows-msvc, os: windows-latest }
           - { target: aarch64-pc-windows-msvc, os: windows-latest }
@@ -63,12 +58,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-
-      - name: Install cross-linker
-        if: matrix.apt != ''
-        run: |
-          sudo apt-get update
-          sudo apt-get install --yes --no-install-recommends ${{ matrix.apt }}
 
       - name: Keep runner paths out of the binary
         shell: bash
@@ -99,35 +88,18 @@ jobs:
 
   # Debian and RPM packages, for the distributions that want one.
   linux-packages:
-    name: Linux packages (${{ matrix.arch }})
+    name: Linux packages
     needs: release-please
     if: needs.release-please.outputs.released == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    env:
-      CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
-    strategy:
-      # One architecture failing must not cost the release the other's packages.
-      fail-fast: false
-      matrix:
-        include:
-          - { target: x86_64-unknown-linux-gnu, arch: amd64 }
-          - { target: aarch64-unknown-linux-gnu, arch: arm64, apt: gcc-aarch64-linux-gnu }
     steps:
       - uses: actions/checkout@v7
         with:
           ref: ${{ needs.release-please.outputs.tag }}
 
       - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
-
-      - name: Install cross-linker
-        if: matrix.apt != ''
-        run: |
-          sudo apt-get update
-          sudo apt-get install --yes --no-install-recommends ${{ matrix.apt }}
 
       - name: Keep runner paths out of the binary
         shell: bash
@@ -147,12 +119,12 @@ jobs:
         run: cargo install --locked cargo-deb cargo-generate-rpm
 
       - name: Build
-        run: cargo build --release --target ${{ matrix.target }}
+        run: cargo build --release
 
       - name: Build .deb and .rpm
         run: |
-          cargo deb --no-build --target ${{ matrix.target }} --output dist/
-          cargo generate-rpm --target ${{ matrix.target }} --output dist/
+          cargo deb --no-build --output dist/
+          cargo generate-rpm --output dist/
 
       - name: Checksums
         working-directory: dist

@@ -37,17 +37,17 @@ jobs:
       - name: Tests
         run: cargo test --all-features
 
-  # The release workflow cross-compiles four targets. Proving they still
-  # compile here means a release never fails on a platform nobody built.
+  # The release workflow builds these four targets. Building — not merely
+  # checking — is the point: `cargo check` does not link, so a link error stays
+  # invisible until a release runs, which is how v1.1.0 shipped incomplete.
   targets:
-    name: Compiles for ${{ matrix.target }}
+    name: Builds for ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - { target: x86_64-unknown-linux-gnu, os: ubuntu-latest }
-          - { target: aarch64-unknown-linux-gnu, os: ubuntu-latest }
           - { target: aarch64-apple-darwin, os: macos-latest }
           - { target: x86_64-pc-windows-msvc, os: windows-latest }
           - { target: aarch64-pc-windows-msvc, os: windows-latest }
@@ -62,9 +62,7 @@ jobs:
         with:
           key: ${{ matrix.target }}
 
-      # `check` does not link, so no cross-linker is needed here. Linking is
-      # exercised by the release workflow.
-      - run: cargo check --all-targets --target ${{ matrix.target }}
+      - run: cargo build --release --target ${{ matrix.target }}
 
   # Guard the promise the README makes: an ordinary export carries no personal
   # data, and no real document is ever committed.
