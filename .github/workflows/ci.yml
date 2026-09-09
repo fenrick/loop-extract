@@ -37,17 +37,26 @@ jobs:
       - name: Tests
         run: cargo test --all-features
 
-  # The release workflow cross-compiles four targets. Proving they still
-  # compile here means a release never fails on a platform nobody built.
+  # The release workflow builds five targets, two of them cross-compiled.
+  # Building — not merely checking — is the point: `cargo check` does not link,
+  # and a missing cross C library is a link error. v1.1.0 shipped without its
+  # Linux ARM64 assets for exactly that reason.
   targets:
-    name: Compiles for ${{ matrix.target }}
+    name: Builds for ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
+    # Only consulted when building the matching target.
+    env:
+      CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
     strategy:
       fail-fast: false
       matrix:
         include:
           - { target: x86_64-unknown-linux-gnu, os: ubuntu-latest }
-          - { target: aarch64-unknown-linux-gnu, os: ubuntu-latest }
+          - {
+              target: aarch64-unknown-linux-gnu,
+              os: ubuntu-latest,
+              apt: "gcc-aarch64-linux-gnu libc6-dev-arm64-cross",
+            }
           - { target: aarch64-apple-darwin, os: macos-latest }
           - { target: x86_64-pc-windows-msvc, os: windows-latest }
           - { target: aarch64-pc-windows-msvc, os: windows-latest }
@@ -58,13 +67,17 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
+      - name: Install cross toolchain
+        if: matrix.apt != ''
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends ${{ matrix.apt }}
+
       - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.target }}
 
-      # `check` does not link, so no cross-linker is needed here. Linking is
-      # exercised by the release workflow.
-      - run: cargo check --all-targets --target ${{ matrix.target }}
+      - run: cargo build --release --target ${{ matrix.target }}
 
   # Guard the promise the README makes: an ordinary export carries no personal
   # data, and no real document is ever committed.
