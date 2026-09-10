@@ -1,0 +1,63 @@
+# Dependabot version updates.
+#
+# Two ecosystems are in play: the Rust crates in Cargo.toml, and the actions
+# used by the workflows. Both are grouped, so a week's updates arrive as one
+# pull request per ecosystem rather than one per dependency.
+#
+# Commit prefixes matter here. Releases are generated from commit messages by
+# release-please, so an unprefixed commit is silently left out of the
+# changelog. `fix` puts a dependency bump under "Fixed" and moves the patch
+# version; `ci` is recorded but hidden, which is right for a workflow-only
+# change. See CONTRIBUTING.md.
+#
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+
+updates:
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Australia/Brisbane"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "fix"
+      include: "scope"
+    groups:
+      # Non-breaking updates travel together; there is no value in reviewing
+      # them one at a time.
+      rust-dependencies:
+        applies-to: version-updates
+        update-types:
+          - "minor"
+          - "patch"
+      # Security fixes are grouped separately so they are never queued behind
+      # an ordinary version bump.
+      rust-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Australia/Brisbane"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    groups:
+      github-actions:
+        applies-to: version-updates
+        patterns:
+          - "*"
