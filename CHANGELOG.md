@@ -4,6 +4,13 @@ All notable changes to this project are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project uses
 [semantic versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1](https://github.com/fenrick/loop-extract/compare/v1.1.0...v1.1.1) (2026-09-10)
+
+
+### Fixed
+
+* drop Linux ARM64, which was never a requested target ([5d0410e](https://github.com/fenrick/loop-extract/commit/5d0410e6083d14bc28200e6e73804c3c2ed436a7))
+
 ## [1.1.0](https://github.com/fenrick/loop-extract/compare/v1.0.0...v1.1.0) (2026-09-09)
 
 
