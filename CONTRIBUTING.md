@@ -141,6 +141,11 @@ hand.
 5. The release workflow then builds four targets, and attaches an archive plus a
    SHA-256 checksum for each, along with `.deb` and `.rpm` packages.
 
+When a pull request is merged with a merge commit, the merge commit carries the
+pull request *title*. Prefix **either** the title **or** the commits inside it,
+never both, or the change is counted twice and appears twice in the changelog.
+Splitting work into typed commits means giving the pull request a plain title.
+
 To release a specific version regardless of what the commits imply, put a footer
 on a commit:
 
